@@ -6,8 +6,8 @@ public class ImgCompLabeler {
 
     static Pixel[][] imageTable;
 
-    static int side = 6; // change to 15 later
-    static double density = 0.3;
+    static int side = 20; // change to 15 later
+    static double density = 0.5;
     static int count = 1;
 
     static void welcome() {
