@@ -1,10 +1,12 @@
+import DataStructures.Stack;
+
 import java.util.Scanner;
 
 public class ImgCompLabeler {
 
     static Pixel[][] imageTable;
 
-    static int side = 8; // change to 15 later
+    static int side = 10; // change to 15 later
     static double density = 0.3;
 
     static void welcome() {
@@ -23,27 +25,115 @@ public class ImgCompLabeler {
 
     static void printAcceptedValues() {
         System.out.println("\nAccepted Values");
+
         System.out.println("Dimension: " + side);
         System.out.println("Density: " + density + "\n");
+
         System.out.println("Grids successfully created!");
     }
 
-    static void generateImage(int len, double density) {
-        imageTable = new Pixel[len][len];
-        int size = len * len;
+    static void generateImage() {
+        imageTable = new Pixel[side+2][side+2];
+        int size = side * side;
 
         int full = (int) (size * density);
         int empty = size - full;
 
-        for (int row = 0; row < len; row++)
-            for (int col = 0; col < len; col++) {
-                int newPixel = choosePixel(empty, full);
+        for (int row = 0; row < side + 2; row++)
+            for (int col = 0; col < side + 2; col++) {
+                if (row == 0 || col == 0 || col == side + 1 || row == side + 1) {
+                    imageTable[row][col] = new Pixel(0);
+                } else {
+                    int newPixel = choosePixel(empty, full);
 
-                if (newPixel == 0) empty--;
-                else full--;
-
-                imageTable[row][col] = new Pixel(newPixel);
+                    if (newPixel == 0) empty--;
+                    else full--;
+                    imageTable[row][col] = new Pixel(newPixel);
+                }
             }
+    }
+
+    static void labelGroups() {
+        int id = 2;
+        for (int row = 1; row <= side + 1; row++) {
+            for (int col = 1; col <= side + 1; col++) {
+                if (imageTable[row][col].group == 1) {
+//                    imageTable[row][col].group = 2;
+                    depthFirstSearch(row, col, id++);
+                }
+            }
+        }
+    }
+
+    static void depthFirstSearch(int row, int col, int id) {
+        Point[] offset = new Point[4];
+        offset[0] = new Point(0, 1); // right
+        offset[1] = new Point(1, 0); // down
+        offset[2] = new Point(0, -1); // left
+        offset[3] = new Point(-1, 0); // up
+
+        Stack<Point> points = new Stack<>();
+
+        points.push(new Point(row, col));
+
+
+        Point curPos = new Point(row, col);
+        int option = 0;
+        int lastOption = 3;
+
+        while (!points.isEmpty()) {
+            curPos = points.pop();
+            imageTable[curPos.row][curPos.col].group = id;
+            // push all adjacent
+            System.out.println(curPos);
+            for (Point point : offset) {
+                curPos = curPos.add(point);
+                if (imageTable[curPos.row][curPos.col].group == 1) {
+                    imageTable[curPos.row][curPos.col].group = 2;
+                    points.push(curPos);
+                }
+            }
+
+            for (Point x : points) System.out.print(x + " ");
+            System.out.println();
+
+            //            while (option <= lastOption) {
+//                Point newPosition = curPos.add(offset[option]);
+//                System.out.println(newPosition);
+//                if (imageTable[curPos.row][curPos.col].group == 1) {
+//                    imageTable[curPos.row][curPos.col].group = id;
+//                    points.push(newPosition);
+//                }
+//                option++;
+//            }
+//            if (option == lastOption) option = 0;
+
+//            option = 0;
+            // pop a node
+        }
+
+
+        //
+//        if (imageTable[row][col+1].group == 1) {
+//            points.push(new Point(row, col+1));
+//            col++;
+//            imageTable[row][col].group = id;
+//        } else if (imageTable[row+1][col].group == 1) {
+//            points.push(new Point(row+1, col));
+//            row++;
+//            imageTable[row][col].group = id;
+//
+//        } else if (imageTable[row-1][col].group == 1) {
+//            points.push(new Point(row-1, col));
+//            row--;
+//            imageTable[row][col].group = id;
+//
+//        } else if (imageTable[row][col-1].group == 1) {
+//            points.push(new Point(row, col-1));
+//            col--;
+//            imageTable[row][col].group = id;
+//        }
+//        System.out.println(col);
     }
 
 
@@ -60,19 +150,23 @@ public class ImgCompLabeler {
 
 
     static void printImage() {
-        for (Pixel[] pixels : imageTable) {
+        for (int row = 1; row <= side; row++) {
             System.out.print("| ");
-            for (int col = 0; col < imageTable.length; col++)
-                System.out.print(pixels[col] + " | ");
+            for (int col = 1; col <= side; col++)
+                System.out.print(imageTable[row][col] + " | ");
             System.out.println();
         }
     }
 
     public static void main(String[] args) {
         welcome();
-        getDimensions();
+//        getDimensions();
         printAcceptedValues();
-        generateImage(side, density);
+        generateImage();
+        labelGroups();
         printImage();
+//        printImage();
     }
 }
+
+
