@@ -1,6 +1,3 @@
-import java.time.Year;
-import java.util.*;
-
 public class Pixel {
 
     public int group;
@@ -26,7 +23,7 @@ public class Pixel {
         while (str.length() + 1 < length)
             str = " " + str + " ";
         if (str.length() < length)
-            return str + " ";
+            return " " + str;
 
         return str;
     }
@@ -40,6 +37,6 @@ public class Pixel {
         else color = GREEN;
 
         String pixelRepr = "(" + group + " " + visitedId + ")";
-        return color + center(pixelRepr, 7) + RESET;
+        return color + center(pixelRepr, 8) + RESET;
     }
 }

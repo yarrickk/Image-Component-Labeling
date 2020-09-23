@@ -6,8 +6,9 @@ public class ImgCompLabeler {
 
     static Pixel[][] imageTable;
 
-    static int side = 10; // change to 15 later
+    static int side = 6; // change to 15 later
     static double density = 0.3;
+    static int count = 1;
 
     static void welcome() {
         System.out.println("Welcome to the Image Component Labeling program!\n");
@@ -33,7 +34,7 @@ public class ImgCompLabeler {
     }
 
     static void generateImage() {
-        imageTable = new Pixel[side+2][side+2];
+        imageTable = new Pixel[side + 2][side + 2];
         int size = side * side;
 
         int full = (int) (size * density);
@@ -81,16 +82,19 @@ public class ImgCompLabeler {
         int option = 0;
         int lastOption = 3;
 
+
         while (!points.isEmpty()) {
             curPos = points.pop();
             imageTable[curPos.row][curPos.col].group = id;
+            imageTable[curPos.row][curPos.col].visitedId = count++;
+
             // push all adjacent
             System.out.println(curPos);
             for (Point point : offset) {
-                curPos = curPos.add(point);
-                if (imageTable[curPos.row][curPos.col].group == 1) {
-                    imageTable[curPos.row][curPos.col].group = 2;
-                    points.push(curPos);
+                Point tmpPos = curPos.add(point);
+                if (imageTable[tmpPos.row][tmpPos.col].group == 1) {
+                    imageTable[tmpPos.row][tmpPos.col].group = id;
+                    points.push(tmpPos);
                 }
             }
 
@@ -112,28 +116,6 @@ public class ImgCompLabeler {
             // pop a node
         }
 
-
-        //
-//        if (imageTable[row][col+1].group == 1) {
-//            points.push(new Point(row, col+1));
-//            col++;
-//            imageTable[row][col].group = id;
-//        } else if (imageTable[row+1][col].group == 1) {
-//            points.push(new Point(row+1, col));
-//            row++;
-//            imageTable[row][col].group = id;
-//
-//        } else if (imageTable[row-1][col].group == 1) {
-//            points.push(new Point(row-1, col));
-//            row--;
-//            imageTable[row][col].group = id;
-//
-//        } else if (imageTable[row][col-1].group == 1) {
-//            points.push(new Point(row, col-1));
-//            col--;
-//            imageTable[row][col].group = id;
-//        }
-//        System.out.println(col);
     }
 
 
@@ -151,9 +133,9 @@ public class ImgCompLabeler {
 
     static void printImage() {
         for (int row = 1; row <= side; row++) {
-            System.out.print("| ");
+            System.out.print("|");
             for (int col = 1; col <= side; col++)
-                System.out.print(imageTable[row][col] + " | ");
+                System.out.print(imageTable[row][col] + "|");
             System.out.println();
         }
     }
