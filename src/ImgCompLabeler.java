@@ -7,7 +7,7 @@ public class ImgCompLabeler {
     static Pixel[][] imageTable;
 
     static int side = 20; // change to 15 later
-    static double density = 0.5;
+    static double density = 0.3;
     static int count = 1;
 
     static void welcome() {
@@ -54,70 +54,6 @@ public class ImgCompLabeler {
             }
     }
 
-    static void labelGroups() {
-        int id = 2;
-        for (int row = 1; row <= side + 1; row++) {
-            for (int col = 1; col <= side + 1; col++) {
-                if (imageTable[row][col].group == 1) {
-//                    imageTable[row][col].group = 2;
-                    depthFirstSearch(row, col, id++);
-                }
-            }
-        }
-    }
-
-    static void depthFirstSearch(int row, int col, int id) {
-        Point[] offset = new Point[4];
-        offset[0] = new Point(0, 1); // right
-        offset[1] = new Point(1, 0); // down
-        offset[2] = new Point(0, -1); // left
-        offset[3] = new Point(-1, 0); // up
-
-        Stack<Point> points = new Stack<>();
-
-        points.push(new Point(row, col));
-
-
-        Point curPos = new Point(row, col);
-        int option = 0;
-        int lastOption = 3;
-
-
-        while (!points.isEmpty()) {
-            curPos = points.pop();
-            imageTable[curPos.row][curPos.col].group = id;
-            imageTable[curPos.row][curPos.col].visitedId = count++;
-
-            // push all adjacent
-            System.out.println(curPos);
-            for (Point point : offset) {
-                Point tmpPos = curPos.add(point);
-                if (imageTable[tmpPos.row][tmpPos.col].group == 1) {
-                    imageTable[tmpPos.row][tmpPos.col].group = id;
-                    points.push(tmpPos);
-                }
-            }
-
-            for (Point x : points) System.out.print(x + " ");
-            System.out.println();
-
-            //            while (option <= lastOption) {
-//                Point newPosition = curPos.add(offset[option]);
-//                System.out.println(newPosition);
-//                if (imageTable[curPos.row][curPos.col].group == 1) {
-//                    imageTable[curPos.row][curPos.col].group = id;
-//                    points.push(newPosition);
-//                }
-//                option++;
-//            }
-//            if (option == lastOption) option = 0;
-
-//            option = 0;
-            // pop a node
-        }
-
-    }
-
 
     static int choosePixel(double empty, double full) {
         double chance = Math.random();
@@ -138,6 +74,43 @@ public class ImgCompLabeler {
                 System.out.print(imageTable[row][col] + "|");
             System.out.println();
         }
+        System.out.println();
+    }
+
+    static void labelGroups() {
+        int groupId = 2;
+        for (int row = 1; row <= side + 1; row++)
+            for (int col = 1; col <= side + 1; col++)
+                if (imageTable[row][col].group == 1)
+                    depthFirstSearch(row, col, groupId++);
+    }
+
+    static void depthFirstSearch(int row, int col, int id) {
+        Point[] offset = {
+                new Point(0, 1),    // right
+                new Point(1, 0),    // down
+                new Point(0, -1),   // left
+                new Point(-1, 0)    // up
+        };
+
+        Stack<Point> points = new Stack<>();
+        points.push(new Point(row, col));
+
+        while (!points.isEmpty()) {
+            Point curPos = points.pop();
+            imageTable[curPos.row][curPos.col].group = id;
+            imageTable[curPos.row][curPos.col].visitedId = count++;
+
+            // push all adjacent
+            for (Point point : offset) {
+                Point tmpPos = curPos.add(point);
+                if (imageTable[tmpPos.row][tmpPos.col].group == 1) {
+                    imageTable[tmpPos.row][tmpPos.col].group = id;
+                    points.push(tmpPos);
+                }
+            }
+
+        }
     }
 
     public static void main(String[] args) {
@@ -145,9 +118,9 @@ public class ImgCompLabeler {
 //        getDimensions();
         printAcceptedValues();
         generateImage();
+        printImage();
         labelGroups();
         printImage();
-//        printImage();
     }
 }
 
