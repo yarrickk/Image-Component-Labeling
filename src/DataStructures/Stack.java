@@ -4,7 +4,7 @@ import java.util.Iterator;
 
 public class Stack<Item> implements Iterable<Item> {
 
-    public Item[] elements = (Item[]) new Object[1];
+    public Item[] elements = (Item[]) new Object[2];
     public int size = 0;
 
     public boolean isEmpty() {

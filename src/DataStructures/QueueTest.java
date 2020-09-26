@@ -38,7 +38,7 @@ class QueueTest {
     }
 
     @Test
-    void Dequeue_X_Enqueue_X() {
+    void Enqueue_X_Dequeue_X() {
         intQueue.enqueue(11);
         assertEquals(intQueue.dequeue(), 11);
     }

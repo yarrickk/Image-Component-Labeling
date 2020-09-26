@@ -1,17 +1,24 @@
 public class Pixel {
-    public static final String CYAN = "\033[0;36m";
-    public static final String YELLOW = "\033[0;33m";
-    public static final String GREEN = "\033[0;32m";
-    public static final String RESET = "\033[0m";
+
+    static final String COLOR_PREFIX = "\u001b[38;5;";
+    static final String BRIGHT_WHITE = COLOR_PREFIX + "0m";
+    static final String DIM_GREY = COLOR_PREFIX + "239m";
+    static final String RESET = "\033[0m";
 
     public int group;
-    public int visitedId;
+    public int visitedId = 0;
+    public boolean colorsOn = false;
 
-    public Pixel(int group) {
+    public Pixel(int group, boolean withColors) {
         this.group = group;
-        this.visitedId = 0;
+        colorsOn = withColors;
     }
 
+
+    /**
+     * Return a centered String of length width.
+     * Padding is done using the space.
+     */
     public String center(String str, int length) {
         while (str.length() + 1 < length)
             str = " " + str + " ";
@@ -20,32 +27,30 @@ public class Pixel {
         return str;
     }
 
-//for i in range(0, 16):
-//    for j in range(0, 16):
-//        code = str(i * 16 + j)
-//        print(u"\u001b[38;5;" + code + "m " + code.ljust(4), end=" ")
-//    print(u"\u001b[0m")
+
+    /**
+     * pseudo random generator in range (100 - 230),
+     * to choose from the brightest colors.
+     * There could be Pixel groups with the same color, but
+     * they won't likely to be near each other.
+     */
+    private int getColorCode() {
+        return ((group + 42) * 5) % 130 + 100;
+    }
+
 
     @Override
     public String toString() {
+        String rawPixelRepr = "(" + group + " " + visitedId + ")";
+        rawPixelRepr = center(rawPixelRepr, 8);
+
+        if (!colorsOn) return rawPixelRepr;
+
         String color;
-//        if (group == 0) color = CYAN;
-//        else if (group == 1) color = YELLOW;
-//        else color = GREEN;
+        if (group == 0) color = DIM_GREY;               // empty pixel
+        else if (group == 1) color = BRIGHT_WHITE;      // filled pixel
+        else color = COLOR_PREFIX + getColorCode() + "m";
 
-        int code = group * 3 + 140 + group % 10;
-        if (code > 230) {
-            code %= 100;
-            code += 30;
-        }
-        color = "\u001b[38;5;" + code + "m";
-        if (group == 0) {
-            color = "\u001b[38;5;" + 242 + "m";
-        } else if (group == 1) {
-            color = "\u001b[38;5;" + 231 + "m";
-        }
-
-        String pixelRepr = "(" + group + " " + visitedId + ")";
-        return color + center(pixelRepr, 8) + RESET;
+        return color + rawPixelRepr + RESET;
     }
 }
