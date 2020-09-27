@@ -1,6 +1,12 @@
 import DataStructures.Queue;
 import DataStructures.Stack;
 
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.util.Random;
 import java.util.Scanner;
 
 public class ImgCompLabeler {
@@ -50,7 +56,7 @@ public class ImgCompLabeler {
 
 
     static void getDimensions() {
-        getSide(5, 20);
+        getSide(5, 200);
         getDensity(0, 1);
     }
 
@@ -172,6 +178,74 @@ public class ImgCompLabeler {
         }
     }
 
+    static void drawPic(String filename, boolean withLabeling) {
+        int coef = 1200 / side;        // scale image to be 1200 x 1200 pixels
+        int imageSide = side * coef;
+
+        BufferedImage img = new BufferedImage(imageSide, imageSide, BufferedImage.TYPE_INT_RGB);
+
+        fillWithColors(img, coef);
+
+        if (withLabeling)
+            drawLabels(img, coef);
+
+        saveImage(img, filename);
+    }
+
+    static void saveImage(BufferedImage img, String filename) {
+        try {
+            ImageIO.write(img, "png", new File(filename));
+        } catch (IOException e) {
+            System.out.println("Error: " + e);
+        }
+    }
+
+    static void fillWithColors(BufferedImage img, int coef) {
+        for (int row = 0; row < img.getWidth(); row++)
+            for (int col = 0; col < img.getHeight(); col++) {
+                int group = imageTableBFS[row / coef + 1][col / coef + 1].group;
+                img.setRGB(col, row, getColor(group));
+            }
+    }
+
+    static void drawLabels(BufferedImage img, int coef) {
+        Graphics graphics = img.getGraphics();
+        graphics.setColor(Color.BLACK);
+        graphics.setFont(new Font("Serif", Font.BOLD, coef - coef / 2));
+
+        FontMetrics metrics = graphics.getFontMetrics();
+
+        for (int row = 0; row < side; row++)
+            for (int col = 0; col < side; col++) {
+                int group = imageTableBFS[row + 1][col + 1].group;
+                if (group > 1) {
+                    String groupStr = String.valueOf(group);
+                    // center text
+                    int x = col * coef + (coef - metrics.stringWidth(groupStr)) / 2;
+                    int y = row * coef + (coef - metrics.getHeight() / 2);
+                    graphics.drawString(groupStr, x, y);
+                }
+            }
+    }
+
+
+    /**
+     * pseudo random color generator with groupId as seed.
+     */
+    static int getColor(int group) {
+        if (group == 0) return 16777215; // white
+        if (group == 1) return 0;        // black
+
+        Random rand = new Random(group);  // randomize seed
+        rand = new Random(rand.nextInt());
+
+        int r = rand.nextInt(256);
+        int g = rand.nextInt(256);
+        int b = rand.nextInt(256);
+
+        return (r << 16) | (g << 8) | b; // pixel
+    }
+
 
     public static void main(String[] args) {
         init();
@@ -179,13 +253,18 @@ public class ImgCompLabeler {
         System.out.println("\nBEFORE SEARCH...");
         printImage(imageTableBFS);
 
+        drawPic("before_search.png", false);
+
         labelGroups();
 
         System.out.println("AFTER DEPTH FIRST SEARCH...");
         printImage(imageTableDFS);
 
+
         System.out.println("AFTER BREADTH FIRST SEARCH...");
         printImage(imageTableBFS);
+
+        drawPic("after_search.png", true);
     }
 }
 
