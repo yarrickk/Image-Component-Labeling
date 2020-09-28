@@ -39,8 +39,6 @@ public class ImgCompLabeler {
         printAcceptedValues();
 
         colorsOn = getYesOrNo("Do you want colors enabled (y/n)?").equals("y");
-
-        generateImage();
     }
 
 
@@ -144,28 +142,28 @@ public class ImgCompLabeler {
                 if (imageTableDFS[row][col].group == 1) {
                     Point seed = new Point(row, col);
 
-                    depthFirstSearch(seed, groupId);
-                    breadthFirstSearch(seed, groupId);
+                    labelWithDFS(seed, groupId, imageTableDFS);
+                    labelWithBFS(seed, groupId, imageTableBFS);
                     groupId++;
                 }
         }
     }
 
 
-    static void depthFirstSearch(Point initPos, int groupId) {
+    static void labelWithDFS(Point initPos, int groupId, Pixel[][] image) {
         Stack<Point> pointsGroup = new Stack<>();
         pointsGroup.push(initPos);
 
         while (!pointsGroup.isEmpty()) {
             Point curPos = pointsGroup.pop();
-            imageTableDFS[curPos.row][curPos.col].group = groupId;
-            imageTableDFS[curPos.row][curPos.col].visitedId = DFS_visitedIdCount++;
+            image[curPos.row][curPos.col].group = groupId;
+            image[curPos.row][curPos.col].visitedId = DFS_visitedIdCount++;
 
             // push all valid adjacent points
             for (Point adjacent : OFFSET) {
                 Point tmpPos = curPos.add(adjacent);
-                if (imageTableDFS[tmpPos.row][tmpPos.col].group == 1) {
-                    imageTableDFS[tmpPos.row][tmpPos.col].group = groupId;
+                if (image[tmpPos.row][tmpPos.col].group == 1) {
+                    image[tmpPos.row][tmpPos.col].group = groupId;
                     pointsGroup.push(tmpPos);
                 }
             }
@@ -173,20 +171,20 @@ public class ImgCompLabeler {
     }
 
 
-    static void breadthFirstSearch(Point initPos, int groupId) {
+    static void labelWithBFS(Point initPos, int groupId, Pixel[][] image) {
         Queue<Point> pointsGroup = new Queue<>();
         pointsGroup.enqueue(initPos);
 
         while (!pointsGroup.isEmpty()) {
             Point curPos = pointsGroup.dequeue();
-            imageTableBFS[curPos.row][curPos.col].group = groupId;
-            imageTableBFS[curPos.row][curPos.col].visitedId = BFS_visitedIdCount++;
+            image[curPos.row][curPos.col].group = groupId;
+            image[curPos.row][curPos.col].visitedId = BFS_visitedIdCount++;
 
             // enqueue all valid adjacent points
             for (Point adjacent : OFFSET) {
                 Point tmpPos = curPos.add(adjacent);
-                if (imageTableBFS[tmpPos.row][tmpPos.col].group == 1) {
-                    imageTableBFS[tmpPos.row][tmpPos.col].group = groupId;
+                if (image[tmpPos.row][tmpPos.col].group == 1) {
+                    image[tmpPos.row][tmpPos.col].group = groupId;
                     pointsGroup.enqueue(tmpPos);
                 }
             }
@@ -197,10 +195,11 @@ public class ImgCompLabeler {
     /**
      * Saves imageTableBFS into a png image.
      * ( Since imageTableBFS groups are identical to imageTableDFS, it doesn't really matter which one)
-     * @param filePath where the image will be stored
+     *
+     * @param filePath     where the image will be stored
      * @param withLabeling if true, label each cell with its group number
      */
-    static void drawOutputImagePNG(String filePath, boolean withLabeling) {
+    static void generateOutputImagePNG(String filePath, boolean withLabeling) {
         int scalingCoef = 1200 / side;        // scale table to be 1200 x 1200 pixels
         int imageSide = side * scalingCoef;
 
@@ -208,7 +207,7 @@ public class ImgCompLabeler {
         fillWithGroupColors(img, scalingCoef);
 
         if (withLabeling)
-            addGroupLabels(img, scalingCoef);
+            fillCellsWithGroupLabels(img, scalingCoef);
 
         saveImagePNG(img, filePath);
     }
@@ -226,13 +225,14 @@ public class ImgCompLabeler {
     static void fillWithGroupColors(BufferedImage img, int coef) {
         for (int row = 0; row < img.getWidth(); row++)
             for (int col = 0; col < img.getHeight(); col++) {
+                // add 1 to index because of the empty surrounding wall
                 int group = imageTableBFS[row / coef + 1][col / coef + 1].group;
                 img.setRGB(col, row, getColor(group));
             }
     }
 
 
-    static void addGroupLabels(BufferedImage img, int coef) {
+    static void fillCellsWithGroupLabels(BufferedImage img, int coef) {
         Graphics graphics = img.getGraphics();
         graphics.setColor(Color.BLACK);
         graphics.setFont(new Font("Serif", Font.BOLD, coef - coef / 2));
@@ -274,22 +274,25 @@ public class ImgCompLabeler {
 
     public static void main(String[] args) {
         init();
+        generateImage();
+
+        String generateImageAnswer = getYesOrNo("Do you want to also generate PNG images? (y/n) ");
+        if (generateImageAnswer.equals("y"))
+            generateOutputImagePNG("before_search.png", false);
 
         System.out.println("\nBEFORE SEARCH...");
         printTable(imageTableBFS);
-
-        drawOutputImagePNG("before_search.png", false);
 
         labelGroups();
 
         System.out.println("AFTER DEPTH FIRST SEARCH...");
         printTable(imageTableDFS);
 
-
         System.out.println("AFTER BREADTH FIRST SEARCH...");
         printTable(imageTableBFS);
 
-        drawOutputImagePNG("after_search.png", true);
+        if (generateImageAnswer.equals("y"))
+            generateOutputImagePNG("after_search.png", true);
     }
 }
 
