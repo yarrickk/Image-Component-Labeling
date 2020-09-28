@@ -5,7 +5,7 @@ import java.util.Iterator;
 public class Queue<Item> implements Iterable<Item> {
 
     private int head = 0, tail = 0;
-    public Item[] elements = (Item[]) new Object[100];
+    public Item[] elements = (Item[]) new Object[2];
 
     public boolean isEmpty() {
         return size() == 0;
@@ -13,15 +13,6 @@ public class Queue<Item> implements Iterable<Item> {
 
     public int size() {
         return head - tail;
-    }
-
-    private void resize(int newLength) {
-        Item[] aux = (Item[]) new Object[newLength];
-        for (int i = 0; i < size(); i++)
-            aux[i] = elements[tail + i];
-        elements = aux;
-        head = size();
-        tail = 0;
     }
 
     public void enqueue(Item element) {
@@ -39,6 +30,15 @@ public class Queue<Item> implements Iterable<Item> {
             resize(elements.length / 2);
         }
         return result;
+    }
+
+    private void resize(int newLength) {
+        Item[] aux = (Item[]) new Object[newLength];
+        for (int i = 0; i < size(); i++)
+            aux[i] = elements[tail + i];
+        elements = aux;
+        head = size();
+        tail = 0;
     }
 
     @Override

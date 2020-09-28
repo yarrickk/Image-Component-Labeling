@@ -23,11 +23,10 @@ public class ImgCompLabeler {
     static int side = 15;        // default values
     static double density = 0.3;
 
-    static int visitedIdCount_DFS = 1;
-    static int visitedIdCount_BFS = 1;
+    static int DFS_visitedIdCount = 1;
+    static int BFS_visitedIdCount = 1;
 
     static boolean colorsOn = true;
-
     static Scanner userInput = new Scanner(System.in);
 
 
@@ -45,22 +44,31 @@ public class ImgCompLabeler {
     }
 
 
-    static String getYesOrNo(String message) {
+    /**
+     * Prints question and asks for input until provided "y" or "n" answer
+     */
+    static String getYesOrNo(String question) {
         while (true) {
-            System.out.print(message);
-            String temp = userInput.next();
+            System.out.print(question);
+            String temp = userInput.next().toLowerCase();
             if (temp.equals("y") || temp.equals("n"))
                 return temp;
         }
     }
 
 
+    /**
+     * Ask user to input dimensions, without accepting wrong values.
+     */
     static void getDimensions() {
-        getSide(5, 200);
+        getSide(5, 20);
         getDensity(0, 1);
     }
 
 
+    /**
+     * Ask user to enter a side (int) between specified range
+     */
     static void getSide(int min, int max) {
         System.out.printf("Please enter a dimension between %d and %d: ", min, max);
         side = userInput.nextInt();
@@ -71,6 +79,9 @@ public class ImgCompLabeler {
     }
 
 
+    /**
+     * Ask user to enter a density (double) between specified range
+     */
     static void getDensity(double min, double max) {
         System.out.printf("Please enter a density between %.1f and %.1f: ", min, max);
         density = userInput.nextDouble();
@@ -90,6 +101,10 @@ public class ImgCompLabeler {
         System.out.println("Grid is successfully created!\n");
     }
 
+
+    /**
+     * Generate imageTableDFS and imageTableBFS with pixels according to provided density
+     */
     static void generateImage() {
         imageTableDFS = new Pixel[side + 2][side + 2];
         imageTableBFS = new Pixel[side + 2][side + 2];
@@ -110,7 +125,7 @@ public class ImgCompLabeler {
     }
 
 
-    static void printImage(Pixel[][] table) {
+    static void printTable(Pixel[][] table) {
         System.out.println();
         for (int row = 1; row <= side; row++) {
             System.out.print("|");
@@ -144,7 +159,7 @@ public class ImgCompLabeler {
         while (!pointsGroup.isEmpty()) {
             Point curPos = pointsGroup.pop();
             imageTableDFS[curPos.row][curPos.col].group = groupId;
-            imageTableDFS[curPos.row][curPos.col].visitedId = visitedIdCount_DFS++;
+            imageTableDFS[curPos.row][curPos.col].visitedId = DFS_visitedIdCount++;
 
             // push all valid adjacent points
             for (Point adjacent : OFFSET) {
@@ -165,7 +180,7 @@ public class ImgCompLabeler {
         while (!pointsGroup.isEmpty()) {
             Point curPos = pointsGroup.dequeue();
             imageTableBFS[curPos.row][curPos.col].group = groupId;
-            imageTableBFS[curPos.row][curPos.col].visitedId = visitedIdCount_BFS++;
+            imageTableBFS[curPos.row][curPos.col].visitedId = BFS_visitedIdCount++;
 
             // enqueue all valid adjacent points
             for (Point adjacent : OFFSET) {
@@ -178,29 +193,37 @@ public class ImgCompLabeler {
         }
     }
 
-    static void drawPic(String filename, boolean withLabeling) {
-        int coef = 1200 / side;        // scale image to be 1200 x 1200 pixels
-        int imageSide = side * coef;
+
+    /**
+     * Saves imageTableBFS into a png image.
+     * ( Since imageTableBFS groups are identical to imageTableDFS, it doesn't really matter which one)
+     * @param filePath where the image will be stored
+     * @param withLabeling if true, label each cell with its group number
+     */
+    static void drawOutputImagePNG(String filePath, boolean withLabeling) {
+        int scalingCoef = 1200 / side;        // scale table to be 1200 x 1200 pixels
+        int imageSide = side * scalingCoef;
 
         BufferedImage img = new BufferedImage(imageSide, imageSide, BufferedImage.TYPE_INT_RGB);
-
-        fillWithColors(img, coef);
+        fillWithGroupColors(img, scalingCoef);
 
         if (withLabeling)
-            drawLabels(img, coef);
+            addGroupLabels(img, scalingCoef);
 
-        saveImage(img, filename);
+        saveImagePNG(img, filePath);
     }
 
-    static void saveImage(BufferedImage img, String filename) {
+
+    static void saveImagePNG(BufferedImage img, String filePath) {
         try {
-            ImageIO.write(img, "png", new File(filename));
+            ImageIO.write(img, "png", new File(filePath));
         } catch (IOException e) {
             System.out.println("Error: " + e);
         }
     }
 
-    static void fillWithColors(BufferedImage img, int coef) {
+
+    static void fillWithGroupColors(BufferedImage img, int coef) {
         for (int row = 0; row < img.getWidth(); row++)
             for (int col = 0; col < img.getHeight(); col++) {
                 int group = imageTableBFS[row / coef + 1][col / coef + 1].group;
@@ -208,7 +231,8 @@ public class ImgCompLabeler {
             }
     }
 
-    static void drawLabels(BufferedImage img, int coef) {
+
+    static void addGroupLabels(BufferedImage img, int coef) {
         Graphics graphics = img.getGraphics();
         graphics.setColor(Color.BLACK);
         graphics.setFont(new Font("Serif", Font.BOLD, coef - coef / 2));
@@ -231,6 +255,7 @@ public class ImgCompLabeler {
 
     /**
      * pseudo random color generator with groupId as seed.
+     * 8-bit RGB color components packed into integer pixel.
      */
     static int getColor(int group) {
         if (group == 0) return 16777215; // white
@@ -243,7 +268,7 @@ public class ImgCompLabeler {
         int g = rand.nextInt(256);
         int b = rand.nextInt(256);
 
-        return (r << 16) | (g << 8) | b; // pixel
+        return (r << 16) | (g << 8) | b; // pixel color
     }
 
 
@@ -251,20 +276,20 @@ public class ImgCompLabeler {
         init();
 
         System.out.println("\nBEFORE SEARCH...");
-        printImage(imageTableBFS);
+        printTable(imageTableBFS);
 
-        drawPic("before_search.png", false);
+        drawOutputImagePNG("before_search.png", false);
 
         labelGroups();
 
         System.out.println("AFTER DEPTH FIRST SEARCH...");
-        printImage(imageTableDFS);
+        printTable(imageTableDFS);
 
 
         System.out.println("AFTER BREADTH FIRST SEARCH...");
-        printImage(imageTableBFS);
+        printTable(imageTableBFS);
 
-        drawPic("after_search.png", true);
+        drawOutputImagePNG("after_search.png", true);
     }
 }
 

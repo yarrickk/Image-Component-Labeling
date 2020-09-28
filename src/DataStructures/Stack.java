@@ -11,13 +11,6 @@ public class Stack<Item> implements Iterable<Item> {
         return size == 0;
     }
 
-    private void resize(int newLength) {
-        Item[] aux = (Item[]) new Object[newLength];
-        for (int i = 0; i < size; i++)
-            aux[i] = elements[i];
-        elements = aux;
-    }
-
     public void push(Item element) {
         if (size == elements.length)
             resize(elements.length * 2);
@@ -33,6 +26,13 @@ public class Stack<Item> implements Iterable<Item> {
         Item poppedElem = elements[--size];
         elements[size] = null;
         return poppedElem;
+    }
+
+    private void resize(int newLength) {
+        Item[] aux = (Item[]) new Object[newLength];
+        for (int i = 0; i < size; i++)
+            aux[i] = elements[i];
+        elements = aux;
     }
 
     @Override

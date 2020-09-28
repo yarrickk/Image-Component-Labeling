@@ -1,7 +1,10 @@
+import java.util.Random;
+
 public class Pixel {
 
+    // ANSI codes for console colors
     static final String COLOR_PREFIX = "\u001b[38;5;";
-    static final String BRIGHT_WHITE = COLOR_PREFIX + "0m";
+    static final String BRIGHT_WHITE = COLOR_PREFIX + "231m";
     static final String DIM_GREY = COLOR_PREFIX + "239m";
     static final String RESET = "\033[0m";
 
@@ -19,10 +22,10 @@ public class Pixel {
      * Return a centered String of length width.
      * Padding is done using the space.
      */
-    public String center(String str, int length) {
-        while (str.length() + 1 < length)
+    public String center(String str, int width) {
+        while (str.length() + 1 < width)
             str = " " + str + " ";
-        if (str.length() < length)
+        if (str.length() < width)
             return " " + str;
         return str;
     }
@@ -35,7 +38,8 @@ public class Pixel {
      * they won't likely to be near each other.
      */
     private int getColorCode() {
-        return ((group + 42) * 5) % 130 + 100;
+        Random random = new Random(group);
+        return random.nextInt(130) + 100;
     }
 
 
