@@ -1,9 +1,5 @@
 **Image Component Labeling**
 
-Yaroslav Babych
-
-Date: 9/27/2020
-
 CIS 256: Project 2.
 
 This program generates random binary image, where a 0 pixel represents image background,
