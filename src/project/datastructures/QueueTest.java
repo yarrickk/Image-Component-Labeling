@@ -1,5 +1,5 @@
 // I just wanted to practice TDD
-package DataStructures;
+package project.datastructures;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

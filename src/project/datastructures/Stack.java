@@ -1,4 +1,4 @@
-package DataStructures;
+package project.datastructures;
 
 import java.util.Iterator;
 

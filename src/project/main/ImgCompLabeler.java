@@ -1,5 +1,7 @@
-import DataStructures.Queue;
-import DataStructures.Stack;
+package project.main;
+
+import project.datastructures.Queue;
+import project.datastructures.Stack;
 
 import javax.imageio.ImageIO;
 import java.awt.*;

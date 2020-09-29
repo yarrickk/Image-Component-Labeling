@@ -1,3 +1,5 @@
+package project.main;
+
 import java.util.Random;
 
 public class Pixel {
@@ -34,7 +36,7 @@ public class Pixel {
     /**
      * pseudo random generator in range (100 - 230),
      * to choose from the brightest colors.
-     * There could be Pixel groups with the same color, but
+     * There could be project.main.Pixel groups with the same color, but
      * they won't likely to be near each other.
      */
     private int getColorCode() {
